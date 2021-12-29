@@ -7,6 +7,8 @@ namespace Lego
 
 const std::string GenericBluetoothController::bluetoothBusName { "org.bluez" };
 const std::string GenericBluetoothController::objectManagerInterfaceName { "org.freedesktop.DBus.ObjectManager" };
+const std::string GenericBluetoothController::propertiesInterfaceName { "org.freedesktop.DBus.Properties" };
+const std::string GenericBluetoothController::getAllMethodName { "GetAll" };
 const std::string GenericBluetoothController::getManagedObjectsMethodName { "GetManagedObjects" };
 
 GenericBluetoothController::GenericBluetoothController(const std::string& bluetoothPath):
@@ -22,6 +24,15 @@ GenericBluetoothController::~GenericBluetoothController()
 const std::string& GenericBluetoothController::path(void) const
 {
     return m_path;
+}
+
+GenericBluetoothController::Properties GenericBluetoothController::properties(const std::string& interface)
+{
+    Properties result;
+
+    m_bluetoothProxy->callMethod(getAllMethodName).onInterface(propertiesInterfaceName).withArguments(interface).storeResultsTo(result);
+
+    return result;
 }
 
 GenericBluetoothController::ManagedObjects GenericBluetoothController::getManagedObjects(void)

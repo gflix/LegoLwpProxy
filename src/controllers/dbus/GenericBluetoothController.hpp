@@ -21,6 +21,7 @@ public:
     virtual ~GenericBluetoothController();
 
     const std::string& path(void) const;
+    Properties properties(const std::string& interface);
 
     static ManagedObjects getManagedObjects(void);
     static ManagedObjects filterManagedObjectsByImplementedInterface(
@@ -36,6 +37,8 @@ public:
 
     static const std::string bluetoothBusName;
     static const std::string objectManagerInterfaceName;
+    static const std::string propertiesInterfaceName;
+    static const std::string getAllMethodName;
     static const std::string getManagedObjectsMethodName;
 
 protected:
