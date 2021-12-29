@@ -2,10 +2,13 @@
 #include <iostream>
 #include <controllers/dbus/BluetoothAdapterController.hpp>
 #include <controllers/dbus/BluetoothDeviceController.hpp>
+#include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
+#include <controllers/dbus/BluetoothGattServiceController.hpp>
 
 #define MAIN_LOOP_SLEEP_USEC (3000000)
 
 using namespace std;
+using namespace Lego;
 
 static bool terminationFlag = false;
 
@@ -31,7 +34,7 @@ void printUsage(const std::string& programName)
 
 void listAdapters(void)
 {
-    auto bluetoothAdapters = Lego::BluetoothAdapterController::getAdapters();
+    auto bluetoothAdapters = BluetoothAdapterController::getAdapters();
     cout << "Found " << bluetoothAdapters.size() << " bluetooth adapters:" << endl;
     for (auto& bluetoothAdapter: bluetoothAdapters)
     {
@@ -47,31 +50,31 @@ void scanForUsableDevices(const vector<string>& arguments)
     }
 
     string adapterPath = arguments.front();
-    Lego::BluetoothAdapterController bluetoothAdapterController { adapterPath };
+    BluetoothAdapterController bluetoothAdapterController { adapterPath };
 
     cout << "Discovering devices using \"" << adapterPath << "\"..." << endl;
     bluetoothAdapterController.startDiscovery();
     sleep(3);
     bluetoothAdapterController.stopDiscovery();
 
-    auto bluetoothDevices = Lego::BluetoothDeviceController::filterDevicesByAdapter(
-        Lego::BluetoothDeviceController::getDevices(),
+    auto bluetoothDevices = BluetoothDeviceController::filterDevicesByAdapter(
+        BluetoothDeviceController::getDevices(),
         adapterPath);
     cout << "Found " << bluetoothDevices.size() << " devices in total." << endl;
 
-    bluetoothDevices = Lego::BluetoothDeviceController::filterDevicesByService(
+    bluetoothDevices = BluetoothDeviceController::filterDevicesByService(
         bluetoothDevices,
-        Lego::BluetoothDeviceController::legoLwpServiceUuid);
+        BluetoothDeviceController::legoLwpServiceUuid);
     cout << "Found " << bluetoothDevices.size() << " devices after filtering by LEGO LWP service:" << endl;
     for (auto& bluetoothDevice: bluetoothDevices)
     {
         string deviceName { "[unknown]" };
         try
         {
-            auto property = Lego::BluetoothDeviceController::getProperty(
+            auto property = BluetoothDeviceController::getProperty(
                 bluetoothDevice.second,
-                Lego::BluetoothDeviceController::bluetoothDeviceInterfaceName,
-                Lego::BluetoothDeviceController::namePropertyName);
+                BluetoothDeviceController::bluetoothDeviceInterfaceName,
+                BluetoothDeviceController::namePropertyName);
             if (property.containsValueOfType<std::string>())
             {
                 deviceName = property.get<std::string>();
@@ -97,7 +100,7 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
 
     cout << "Going to connect to device \"" << devicePath << " ..." << endl;
 
-    Lego::BluetoothDeviceController bluetoothDeviceController { devicePath };
+    BluetoothDeviceController bluetoothDeviceController { devicePath };
     auto deviceProperties = bluetoothDeviceController.deviceProperties();
     if (!bluetoothDeviceController.hasLegoLwpService(deviceProperties))
     {
@@ -112,9 +115,43 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
 
     try
     {
-        while (!terminationFlag)
+        while (!terminationFlag && bluetoothDeviceController.connected() && !bluetoothDeviceController.servicesResolved())
         {
-            usleep(MAIN_LOOP_SLEEP_USEC);
+            usleep(MAIN_LOOP_SLEEP_USEC >> 2);
+        }
+        if (bluetoothDeviceController.servicesResolved())
+        {
+            cout << "Trying to connect to the LEGO LWP service..." << endl;
+            auto gattServices = BluetoothGattServiceController::filterGattServicesByService(
+                bluetoothDeviceController.services(),
+                BluetoothDeviceController::legoLwpServiceUuid);
+            if (gattServices.size() != 1)
+            {
+                throw std::runtime_error("error resolving the LEGO LWP GATT service");
+            }
+
+            auto characteristics = BluetoothGattCharacteristicController::filterGattCharacteristicsByCharacteristic(
+                BluetoothGattCharacteristicController::filterGattCharacteristicsByService(
+                    BluetoothGattCharacteristicController::getGattCharacteristics(),
+                    gattServices.cbegin()->first),
+                BluetoothGattCharacteristicController::legoLwpCharacteristicUuid);
+
+            if (characteristics.size() != 1)
+            {
+                throw std::runtime_error("error resolving the LEGO LWP GATT characteristic");
+            }
+
+            BluetoothGattCharacteristicController legoLwpCharacteristic { characteristics.cbegin()->first };
+
+            while (!terminationFlag && bluetoothDeviceController.connected())
+            {
+                usleep(MAIN_LOOP_SLEEP_USEC);
+            }
+        }
+
+        if (!bluetoothDeviceController.connected())
+        {
+            cout << "Connection to device lost. Shutting down." << endl;
         }
     }
     catch(const std::exception& e)

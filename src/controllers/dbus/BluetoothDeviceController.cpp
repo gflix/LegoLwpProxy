@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <iostream>
 #include <controllers/dbus/BluetoothDeviceController.hpp>
+#include <controllers/dbus/BluetoothGattServiceController.hpp>
 
 namespace Lego
 {
@@ -7,23 +9,43 @@ namespace Lego
 const std::string BluetoothDeviceController::bluetoothDeviceInterfaceName { "org.bluez.Device1" };
 const std::string BluetoothDeviceController::connectMethodName { "Connect" };
 const std::string BluetoothDeviceController::disconnectMethodName { "Disconnect" };
-const std::string BluetoothDeviceController::adapterPropertyName { "Adapter" };
-const std::string BluetoothDeviceController::namePropertyName { "Name" };
-const std::string BluetoothDeviceController::uuidsPropertyName { "UUIDs" };
 const std::string BluetoothDeviceController::legoLwpServiceUuid { "00001623-1212-efde-1623-785feabcd123" };
 
 BluetoothDeviceController::BluetoothDeviceController(const std::string& bluetoothDevicePath):
-    GenericBluetoothController(bluetoothDevicePath)
+    GenericBluetoothController(bluetoothDevicePath),
+    m_connected(false),
+    m_servicesResolved(false)
 {
+    refreshDeviceProperties();
 }
 
 BluetoothDeviceController::~BluetoothDeviceController()
 {
 }
 
-BluetoothDeviceController::Properties BluetoothDeviceController::deviceProperties(void)
+const BluetoothDeviceController::Properties& BluetoothDeviceController::deviceProperties(void) const
 {
-    return properties(bluetoothDeviceInterfaceName);
+    return m_deviceProperties;
+}
+
+bool BluetoothDeviceController::connected(void) const
+{
+    return m_connected;
+}
+
+bool BluetoothDeviceController::servicesResolved(void) const
+{
+    return m_servicesResolved;
+}
+
+const BluetoothDeviceController::ManagedObjects& BluetoothDeviceController::services(void) const
+{
+    return m_services;
+}
+
+void BluetoothDeviceController::refreshDeviceProperties(void)
+{
+    m_deviceProperties = properties(bluetoothDeviceInterfaceName);
 }
 
 void BluetoothDeviceController::connect(void)
@@ -127,6 +149,72 @@ BluetoothDeviceController::ManagedObjects BluetoothDeviceController::filterDevic
     });
 
     return result;
+}
+
+void BluetoothDeviceController::onPropertiesChanged(
+    const std::string& interface,
+    const Properties& changedProperties,
+    const StringList& invalidatedProperties)
+{
+    if (interface == bluetoothDeviceInterfaceName)
+    {
+        onDevicePropertiesChanged(changedProperties, invalidatedProperties);
+    }
+}
+
+void BluetoothDeviceController::onDevicePropertiesChanged(
+    const Properties& changedProperties,
+    const StringList& invalidatedProperties)
+{
+    for (auto& invalidatedProperty: invalidatedProperties)
+    {
+        onDevicePropertyRemoved(invalidatedProperty);
+        m_deviceProperties.erase(invalidatedProperty);
+    }
+
+    for (auto& changedProperty: changedProperties)
+    {
+        onDevicePropertyChanged(changedProperty.first, changedProperty.second);
+        m_deviceProperties[changedProperty.first] = changedProperty.second;
+    }
+}
+
+void BluetoothDeviceController::onDevicePropertyRemoved(const std::string& invalidatedProperty)
+{
+    std::cout << "BluetoothDeviceController::onDevicePropertyRemoved(" << invalidatedProperty << ")" << std::endl;
+}
+
+void BluetoothDeviceController::onDevicePropertyChanged(const std::string& key, const Property& value)
+{
+    if (key == connectedPropertyName)
+    {
+        if (value.containsValueOfType<bool>())
+        {
+            m_connected = value.get<bool>();
+        }
+    }
+    else if (key == servicesResolvedPropertyName)
+    {
+        if (value.containsValueOfType<bool>())
+        {
+            m_servicesResolved = value.get<bool>();
+            onDeviceServicesResolved(m_servicesResolved);
+        }
+    }
+}
+
+void BluetoothDeviceController::onDeviceServicesResolved(bool state)
+{
+    if (state)
+    {
+        m_services = BluetoothGattServiceController::filterGattServicesByDevice(
+            BluetoothGattServiceController::getGattServices(),
+            m_path);
+    }
+    else
+    {
+        m_services.clear();
+    }
 }
 
 } /* namespace Lego */

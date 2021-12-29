@@ -7,6 +7,8 @@ add_executable(
     LegoLwpProxy.cpp
     controllers/dbus/BluetoothAdapterController.cpp
     controllers/dbus/BluetoothDeviceController.cpp
+    controllers/dbus/BluetoothGattCharacteristicController.cpp
+    controllers/dbus/BluetoothGattServiceController.cpp
     controllers/dbus/GenericBluetoothController.cpp
 )
 

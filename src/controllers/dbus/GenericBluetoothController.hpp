@@ -12,6 +12,7 @@ class GenericBluetoothController
 {
 public:
 
+    typedef std::vector<std::string> StringList;
     typedef sdbus::Variant Property;
     typedef std::map<std::string, Property> Properties;
     typedef std::map<std::string, Properties> ManagedObject;
@@ -40,11 +41,27 @@ public:
     static const std::string propertiesInterfaceName;
     static const std::string getAllMethodName;
     static const std::string getManagedObjectsMethodName;
+    static const std::string adapterPropertyName;
+    static const std::string connectedPropertyName;
+    static const std::string devicePropertyName;
+    static const std::string namePropertyName;
+    static const std::string notifyingPropertyName;
+    static const std::string servicePropertyName;
+    static const std::string servicesResolvedPropertyName;
+    static const std::string uuidPropertyName;
+    static const std::string uuidsPropertyName;
+    static const std::string valuePropertyName;
+    static const std::string propertiesChangedSignalName;
 
 protected:
 
     std::string m_path;
     std::unique_ptr<sdbus::IProxy> m_bluetoothProxy;
+
+    virtual void onPropertiesChanged(
+        const std::string& interface,
+        const Properties& changedProperties,
+        const StringList& invalidatedProperties);
 
 private:
 

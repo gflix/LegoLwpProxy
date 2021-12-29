@@ -10,11 +10,27 @@ const std::string GenericBluetoothController::objectManagerInterfaceName { "org.
 const std::string GenericBluetoothController::propertiesInterfaceName { "org.freedesktop.DBus.Properties" };
 const std::string GenericBluetoothController::getAllMethodName { "GetAll" };
 const std::string GenericBluetoothController::getManagedObjectsMethodName { "GetManagedObjects" };
+const std::string GenericBluetoothController::adapterPropertyName { "Adapter" };
+const std::string GenericBluetoothController::connectedPropertyName { "Connected" };
+const std::string GenericBluetoothController::devicePropertyName { "Device" };
+const std::string GenericBluetoothController::namePropertyName { "Name" };
+const std::string GenericBluetoothController::notifyingPropertyName { "Notifying" };
+const std::string GenericBluetoothController::servicePropertyName { "Service" };
+const std::string GenericBluetoothController::servicesResolvedPropertyName { "ServicesResolved" };
+const std::string GenericBluetoothController::uuidPropertyName { "UUID" };
+const std::string GenericBluetoothController::uuidsPropertyName { "UUIDs" };
+const std::string GenericBluetoothController::valuePropertyName { "Value" };
+const std::string GenericBluetoothController::propertiesChangedSignalName { "PropertiesChanged" };
 
 GenericBluetoothController::GenericBluetoothController(const std::string& bluetoothPath):
     m_path(bluetoothPath),
     m_bluetoothProxy(sdbus::createProxy(bluetoothBusName, bluetoothPath))
 {
+    m_bluetoothProxy->uponSignal(propertiesChangedSignalName).onInterface(propertiesInterfaceName).
+        call([this](const std::string& interface, const Properties& changedProperties, const StringList& invalidatedProperties) {
+            this->onPropertiesChanged(interface, changedProperties, invalidatedProperties);
+        });
+    m_bluetoothProxy->finishRegistration();  // TODO this prevents sub classing
 }
 
 GenericBluetoothController::~GenericBluetoothController()
@@ -85,5 +101,11 @@ const GenericBluetoothController::Property& GenericBluetoothController::getPrope
     return it->second;
 }
 
+void GenericBluetoothController::onPropertiesChanged(
+    const std::string& interface,
+    const Properties& changedProperties,
+    const StringList& invalidatedProperties)
+{
+}
 
 } /* namespace Lego */

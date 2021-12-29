@@ -11,12 +11,16 @@ namespace Lego
 class BluetoothDeviceController: public GenericBluetoothController
 {
 public:
-    typedef std::vector<std::string> StringList;
-
     BluetoothDeviceController(const std::string& bluetoothAdapterPath);
     virtual ~BluetoothDeviceController();
 
-    Properties deviceProperties(void);
+
+    const Properties& deviceProperties(void) const;
+    bool connected(void) const;
+    bool servicesResolved(void) const;
+    const ManagedObjects& services(void) const;
+
+    void refreshDeviceProperties(void);
 
     void connect(void);
     void disconnect(void);
@@ -31,12 +35,27 @@ public:
     static const std::string bluetoothDeviceInterfaceName;
     static const std::string connectMethodName;
     static const std::string disconnectMethodName;
-    static const std::string adapterPropertyName;
-    static const std::string namePropertyName;
-    static const std::string uuidsPropertyName;
     static const std::string legoLwpServiceUuid;
 
 protected:
+
+    Properties m_deviceProperties;
+    bool m_connected;
+    bool m_servicesResolved;
+    ManagedObjects m_services;
+
+    void onPropertiesChanged(
+        const std::string& interface,
+        const Properties& changedProperties,
+        const StringList& invalidatedProperties) override;
+
+    virtual void onDevicePropertiesChanged(
+        const Properties& changedProperties,
+        const StringList& invalidatedProperties);
+
+    virtual void onDevicePropertyRemoved(const std::string& invalidatedProperty);
+    virtual void onDevicePropertyChanged(const std::string& key, const Property& value);
+    virtual void onDeviceServicesResolved(bool state);
 
 private:
 
