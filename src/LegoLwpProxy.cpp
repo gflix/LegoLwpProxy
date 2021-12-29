@@ -110,9 +110,18 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     signal(SIGHUP, terminationHandler);
     signal(SIGINT, terminationHandler);
 
-    while (!terminationFlag)
+    try
     {
-        usleep(MAIN_LOOP_SLEEP_USEC);
+        while (!terminationFlag)
+        {
+            usleep(MAIN_LOOP_SLEEP_USEC);
+        }
+    }
+    catch(const std::exception& e)
+    {
+        bluetoothDeviceController.disconnect();
+        cout << "Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\"." << endl;
+        throw;
     }
 
     bluetoothDeviceController.disconnect();
