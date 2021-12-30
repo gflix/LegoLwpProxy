@@ -5,7 +5,7 @@
 #include <string>
 #include <models/LogLevel.hpp>
 
-namespace Cura
+namespace Lego
 {
 
 class Log
@@ -35,21 +35,21 @@ private:
 };
 
 #define LOG_ERROR(message) { \
-    std::stringstream tempLogStream; tempLogStream << message; Cura::Log::instance.error(tempLogStream.str()); \
+    std::stringstream tempLogStream; tempLogStream << message; Lego::Log::instance.error(tempLogStream.str()); \
 }
 #define LOG_WARNING(message) { \
-    std::stringstream tempLogStream; tempLogStream << message; Cura::Log::instance.warning(tempLogStream.str()); \
+    std::stringstream tempLogStream; tempLogStream << message; Lego::Log::instance.warning(tempLogStream.str()); \
 }
 #define LOG_NOTICE(message) { \
-    std::stringstream tempLogStream; tempLogStream << message; Cura::Log::instance.notice(tempLogStream.str()); \
+    std::stringstream tempLogStream; tempLogStream << message; Lego::Log::instance.notice(tempLogStream.str()); \
 }
 #define LOG_INFO(message) { \
-    std::stringstream tempLogStream; tempLogStream << message; Cura::Log::instance.info(tempLogStream.str()); \
+    std::stringstream tempLogStream; tempLogStream << message; Lego::Log::instance.info(tempLogStream.str()); \
 }
 #define LOG_DEBUG(message) { \
-    std::stringstream tempLogStream; tempLogStream << message; Cura::Log::instance.debug(tempLogStream.str()); \
+    std::stringstream tempLogStream; tempLogStream << message; Lego::Log::instance.debug(tempLogStream.str()); \
 }
 
-} /* namespace Cura */
+} /* namespace Lego */
 
 #endif /* UTILS_LOG_HPP_ */

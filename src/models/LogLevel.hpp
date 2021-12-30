@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-namespace Cura
+namespace Lego
 {
 
 enum class LogLevel
@@ -17,6 +17,6 @@ enum class LogLevel
 
 std::ostream& operator<<(std::ostream& stream, const LogLevel& item);
 
-} /* namespace Cura */
+} /* namespace Lego */
 
 #endif /* MODELS_LOGLEVEL_HPP_ */

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <utils/Log.hpp>
 
-namespace Cura
+namespace Lego
 {
 
 Log Log::instance = {};
@@ -101,4 +101,4 @@ void Log::determineOutputMode(void)
     toTty = isatty(fileno(stdout)) && isatty(fileno(stderr));
 }
 
-} /* namespace Cura */
+} /* namespace Lego */

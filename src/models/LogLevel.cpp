@@ -1,6 +1,6 @@
 #include <models/LogLevel.hpp>
 
-namespace Cura
+namespace Lego
 {
 
 std::ostream& operator<<(std::ostream& stream, const LogLevel& item)
@@ -30,4 +30,4 @@ std::ostream& operator<<(std::ostream& stream, const LogLevel& item)
     return stream;
 }
 
-} /* namespace Cura */
+} /* namespace Lego */
