@@ -35,6 +35,14 @@ const BluetoothGattCharacteristicController::Bytes& BluetoothGattCharacteristicC
     return m_data;
 }
 
+void BluetoothGattCharacteristicController::writeData(const Bytes& data)
+{
+    Properties properties;
+    properties["offset"] = sdbus::Variant((uint16_t) 0);
+
+    m_bluetoothProxy->callMethod("WriteValue").onInterface(bluetoothGattCharacteristicInterfaceName).withArguments(data, properties);
+}
+
 void BluetoothGattCharacteristicController::refreshGattCharacteristicProperties(void)
 {
     m_gattCharacteristicProperties = properties(bluetoothGattCharacteristicInterfaceName);
@@ -170,15 +178,11 @@ void BluetoothGattCharacteristicController::onGattCharacteristicPropertyChanged(
 
 void BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(const Bytes& data)
 {
-    LOG_DEBUG(
-        "BluetoothGattCharacteristicController::onGattCharacteristicDataReceived("
-        "size=" << data.size() << ","
-        "data=" << Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data)) << ")");
-
     if (m_serverThread)
     {
-        auto text = Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data)) + "\r\n";
-        m_serverThread->broadcast(text);
+        auto text = Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data));
+        LOG_DEBUG("TX: " << text);
+        m_serverThread->broadcast(text +  + "\r\n");
     }
 }
 

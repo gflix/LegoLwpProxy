@@ -18,6 +18,7 @@ public:
 
     const Properties& gattCharacteristicProperties(void) const;
     const Bytes& data(void) const;
+    void writeData(const Bytes& data);
 
     void refreshGattCharacteristicProperties(void);
     void restartNotifications(void);
