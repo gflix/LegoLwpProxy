@@ -16,6 +16,7 @@ add_executable(
     controllers/ip/TcpSocket.cpp
     models/ByteArray.cpp
     models/LogLevel.cpp
+    protocols/ByteArray.cpp
     utils/Log.cpp
 )
 
