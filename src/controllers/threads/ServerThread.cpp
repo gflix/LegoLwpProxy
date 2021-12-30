@@ -120,6 +120,8 @@ void ServerThread::updateDescriptors(int& maxDescriptor, fd_set& descriptors, ti
 {
     maxDescriptor = max(maxDescriptor, m_serverSocket.descriptor());
     FD_SET(m_serverSocket.descriptor(), &descriptors);
+
+    cleanUpFinishedConnectionThreads();
 }
 
 void ServerThread::cleanUpFinishedConnectionThreads(void)
