@@ -184,7 +184,7 @@ int main(int argc, char const* argv[])
     string command;
     vector<string> arguments;
 
-    if (argc >= 1)
+    if (argc >= 2)
     {
         command = { argv[1] };
         for (auto i = 2; i < argc; ++i)
