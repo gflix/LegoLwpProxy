@@ -20,6 +20,7 @@ add_executable(
     models/ByteArray.cpp
     models/LogLevel.cpp
     protocols/ByteArray.cpp
+    utils/LineBuffer.cpp
     utils/Log.cpp
 )
 
