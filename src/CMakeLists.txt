@@ -5,11 +5,16 @@ include_directories(
 add_executable(
     lego-lwp-proxy
     LegoLwpProxy.cpp
+    controllers/GenericDescriptor.cpp
     controllers/dbus/BluetoothAdapterController.cpp
     controllers/dbus/BluetoothDeviceController.cpp
     controllers/dbus/BluetoothGattCharacteristicController.cpp
     controllers/dbus/BluetoothGattServiceController.cpp
     controllers/dbus/GenericBluetoothController.cpp
+    controllers/ip/IpSocket.cpp
+    controllers/ip/TcpServerSocket.cpp
+    controllers/ip/TcpSocket.cpp
+    models/ByteArray.cpp
     models/LogLevel.cpp
     utils/Log.cpp
 )

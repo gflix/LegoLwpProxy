@@ -4,6 +4,7 @@
 #include <controllers/dbus/BluetoothDeviceController.hpp>
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
 #include <controllers/dbus/BluetoothGattServiceController.hpp>
+#include <controllers/ip/TcpServerSocket.hpp>
 #include <utils/Log.hpp>
 
 #define MAIN_LOOP_SLEEP_USEC (3000000)
@@ -99,6 +100,10 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     string devicePath = arguments[0];
     int tcpServerPort = stoi(arguments[1]);
 
+    TcpServerSocket tcpServerSocket;
+    LOG_INFO("Trying to open the TCP server port...");
+    tcpServerSocket.open(tcpServerPort, IpSocket::Protocol::IPV6);
+
     LOG_INFO("Going to connect to device \"" << devicePath << " ...");
 
     BluetoothDeviceController bluetoothDeviceController { devicePath };
@@ -157,11 +162,13 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     }
     catch(const std::exception& e)
     {
+        tcpServerSocket.close();
         bluetoothDeviceController.disconnect();
         LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
         throw;
     }
 
+    tcpServerSocket.close();
     bluetoothDeviceController.disconnect();
     LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
 }
