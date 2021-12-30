@@ -18,6 +18,8 @@ public:
     const Bytes& data(void) const;
 
     void refreshGattCharacteristicProperties(void);
+    void restartNotifications(void);
+    void stopNotifications(void);
 
     static ManagedObjects getGattCharacteristics(void);
     static ManagedObjects getGattCharacteristics(const ManagedObjects& input);
@@ -25,6 +27,8 @@ public:
     static ManagedObjects filterGattCharacteristicsByCharacteristic(const ManagedObjects& input, const std::string& characteristicUuid);
 
     static const std::string bluetoothGattCharacteristicInterfaceName;
+    static const std::string startNotifyMethodName;
+    static const std::string stopNotifyMethodName;
     static const std::string legoLwpCharacteristicUuid;
 
 protected:

@@ -1,48 +1,26 @@
 #include <algorithm>
 #include <iostream>
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
+#include <protocols/ByteArray.hpp>
 #include <utils/Log.hpp>
 
 namespace Lego
 {
 
 const std::string BluetoothGattCharacteristicController::bluetoothGattCharacteristicInterfaceName { "org.bluez.GattCharacteristic1" };
+const std::string BluetoothGattCharacteristicController::startNotifyMethodName { "StartNotify" };
+const std::string BluetoothGattCharacteristicController::stopNotifyMethodName { "StopNotify" };
 const std::string BluetoothGattCharacteristicController::legoLwpCharacteristicUuid { "00001624-1212-efde-1623-785feabcd123" };
 
 BluetoothGattCharacteristicController::BluetoothGattCharacteristicController(const std::string& bluetoothServicePath):
     GenericBluetoothController(bluetoothServicePath)
 {
     refreshGattCharacteristicProperties();
-    try
-    {
-        m_bluetoothProxy->callMethod("StopNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
-    }
-    catch(const std::exception& e)
-    {
-        LOG_DEBUG(e.what());
-    }
-
-    m_bluetoothProxy->callMethod("StartNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
-
-    Bytes data;
-    data.push_back(0x08);
-    data.push_back(0x00);
-    data.push_back(0x81);
-    data.push_back(0x32);
-    data.push_back(0x11);
-    data.push_back(0x51);
-    data.push_back(0x00);
-    data.push_back(0x01);
-
-    Properties properties;
-    properties["offset"] = sdbus::Variant((uint16_t) 0);
-
-    m_bluetoothProxy->callMethod("WriteValue").onInterface(bluetoothGattCharacteristicInterfaceName).withArguments(data, properties);
 }
 
 BluetoothGattCharacteristicController::~BluetoothGattCharacteristicController()
 {
-    m_bluetoothProxy->callMethod("StopNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
+    stopNotifications();
 }
 
 const BluetoothGattCharacteristicController::Properties& BluetoothGattCharacteristicController::gattCharacteristicProperties(void) const
@@ -58,6 +36,24 @@ const BluetoothGattCharacteristicController::Bytes& BluetoothGattCharacteristicC
 void BluetoothGattCharacteristicController::refreshGattCharacteristicProperties(void)
 {
     m_gattCharacteristicProperties = properties(bluetoothGattCharacteristicInterfaceName);
+}
+
+void BluetoothGattCharacteristicController::restartNotifications(void)
+{
+    stopNotifications();
+    m_bluetoothProxy->callMethod("StartNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
+}
+
+void BluetoothGattCharacteristicController::stopNotifications(void)
+{
+    try
+    {
+        m_bluetoothProxy->callMethod("StopNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
+    }
+    catch(const std::exception&)
+    {
+        // silently skip
+    }
 }
 
 BluetoothGattCharacteristicController::ManagedObjects BluetoothGattCharacteristicController::getGattCharacteristics(void)
@@ -167,7 +163,10 @@ void BluetoothGattCharacteristicController::onGattCharacteristicPropertyChanged(
 
 void BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(const Bytes& data)
 {
-    LOG_DEBUG("BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(" << data.size() << ")");
+    LOG_DEBUG(
+        "BluetoothGattCharacteristicController::onGattCharacteristicDataReceived("
+        "size=" << data.size() << ","
+        "data=" << Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data)) << ")");
 }
 
 } /* namespace Lego */
