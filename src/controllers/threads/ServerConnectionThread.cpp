@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <controllers/threads/ServerConnectionThread.hpp>
+#include <protocols/ByteArray.hpp>
 #include <utils/Log.hpp>
 
 namespace Lego
@@ -57,7 +58,22 @@ void ServerConnectionThread::task(fd_set& descriptors)
         }
         else
         {
-            LOG_INFO("Received " << receivedData.size() << " bytes of data");
+            m_lineBuffer.putDataIntoBuffer(receivedData);
+            try
+            {
+                while (m_lineBuffer.hasLine())
+                {
+                    auto data = Protocol::ByteArray::fromHexString(m_lineBuffer.getLine());
+                    LOG_DEBUG("RX: " << Protocol::ByteArray::toHexString(data));
+                    m_legoLwpCharacteristic.writeData(Protocol::ByteArray::toVector(data));
+                }
+            }
+            catch(const std::exception& e)
+            {
+                LOG_WARNING("Could not process message (" << e.what() << ")! Closing socket.");
+                m_socket.close();
+                m_threadFinished = true;
+            }
         }
     }
 }

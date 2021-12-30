@@ -4,6 +4,7 @@
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
 #include <controllers/ip/TcpSocket.hpp>
 #include <controllers/threads/GenericThread.hpp>
+#include <utils/LineBuffer.hpp>
 
 namespace Lego
 {
@@ -23,6 +24,7 @@ public:
 protected:
     BluetoothGattCharacteristicController& m_legoLwpCharacteristic;
     TcpSocket m_socket;
+    LineBuffer m_lineBuffer;
 
     void setup(void) override;
     void task(fd_set& descriptors) override;
