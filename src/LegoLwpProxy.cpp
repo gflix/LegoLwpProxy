@@ -4,6 +4,7 @@
 #include <controllers/dbus/BluetoothDeviceController.hpp>
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
 #include <controllers/dbus/BluetoothGattServiceController.hpp>
+#include <utils/Log.hpp>
 
 #define MAIN_LOOP_SLEEP_USEC (3000000)
 
@@ -14,7 +15,7 @@ static bool terminationFlag = false;
 
 void terminationHandler(int signal)
 {
-    cerr << "Caught signal " << signal << ". Stopping threads." << endl;
+    LOG_NOTICE("Caught signal " << signal << ". Stopping threads.");
     terminationFlag = true;
 }
 
@@ -98,7 +99,7 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     string devicePath = arguments[0];
     int tcpServerPort = stoi(arguments[1]);
 
-    cout << "Going to connect to device \"" << devicePath << " ..." << endl;
+    LOG_INFO("Going to connect to device \"" << devicePath << " ...");
 
     BluetoothDeviceController bluetoothDeviceController { devicePath };
     auto deviceProperties = bluetoothDeviceController.deviceProperties();
@@ -107,7 +108,7 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
         throw std::runtime_error("LEGO LWP was not advertised by the device");
     }
     bluetoothDeviceController.connect();
-    cout << "Successfully connected to \"" << bluetoothDeviceController.getName(deviceProperties) << "\"." << endl;
+    LOG_NOTICE("Successfully connected to \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
 
     signal(SIGTERM, terminationHandler);
     signal(SIGHUP, terminationHandler);
@@ -121,7 +122,7 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
         }
         if (bluetoothDeviceController.servicesResolved())
         {
-            cout << "Trying to connect to the LEGO LWP service..." << endl;
+            LOG_INFO("Trying to connect to the LEGO LWP service...");
             auto gattServices = BluetoothGattServiceController::filterGattServicesByService(
                 bluetoothDeviceController.services(),
                 BluetoothDeviceController::legoLwpServiceUuid);
@@ -151,18 +152,18 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
 
         if (!bluetoothDeviceController.connected())
         {
-            cout << "Connection to device lost. Shutting down." << endl;
+            LOG_NOTICE("Connection to device lost. Shutting down.");
         }
     }
     catch(const std::exception& e)
     {
         bluetoothDeviceController.disconnect();
-        cout << "Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\"." << endl;
+        LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
         throw;
     }
 
     bluetoothDeviceController.disconnect();
-    cout << "Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\"." << endl;
+    LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
 }
 
 int main(int argc, char const* argv[])

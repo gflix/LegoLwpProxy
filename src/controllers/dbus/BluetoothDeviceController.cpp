@@ -2,6 +2,7 @@
 #include <iostream>
 #include <controllers/dbus/BluetoothDeviceController.hpp>
 #include <controllers/dbus/BluetoothGattServiceController.hpp>
+#include <utils/Log.hpp>
 
 namespace Lego
 {
@@ -181,7 +182,7 @@ void BluetoothDeviceController::onDevicePropertiesChanged(
 
 void BluetoothDeviceController::onDevicePropertyRemoved(const std::string& invalidatedProperty)
 {
-    std::cout << "BluetoothDeviceController::onDevicePropertyRemoved(" << invalidatedProperty << ")" << std::endl;
+    LOG_DEBUG("BluetoothDeviceController::onDevicePropertyRemoved(" << invalidatedProperty << ")");
 }
 
 void BluetoothDeviceController::onDevicePropertyChanged(const std::string& key, const Property& value)

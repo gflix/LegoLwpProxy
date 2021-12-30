@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
+#include <utils/Log.hpp>
 
 namespace Lego
 {
@@ -18,7 +19,7 @@ BluetoothGattCharacteristicController::BluetoothGattCharacteristicController(con
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        LOG_DEBUG(e.what());
     }
 
     m_bluetoothProxy->callMethod("StartNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
@@ -152,7 +153,7 @@ void BluetoothGattCharacteristicController::onGattCharacteristicPropertiesChange
 
 void BluetoothGattCharacteristicController::onGattCharacteristicPropertyRemoved(const std::string& invalidatedProperty)
 {
-    std::cout << "BluetoothGattCharacteristicController::onGattCharacteristicPropertyRemoved(" << invalidatedProperty << ")" << std::endl;
+    LOG_DEBUG("BluetoothGattCharacteristicController::onGattCharacteristicPropertyRemoved(" << invalidatedProperty << ")");
 }
 
 void BluetoothGattCharacteristicController::onGattCharacteristicPropertyChanged(const std::string& key, const Property& value)
@@ -166,7 +167,7 @@ void BluetoothGattCharacteristicController::onGattCharacteristicPropertyChanged(
 
 void BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(const Bytes& data)
 {
-    std::cout << "BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(" << data.size() << ")" << std::endl;
+    LOG_DEBUG("BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(" << data.size() << ")");
 }
 
 } /* namespace Lego */

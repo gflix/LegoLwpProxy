@@ -10,6 +10,8 @@ add_executable(
     controllers/dbus/BluetoothGattCharacteristicController.cpp
     controllers/dbus/BluetoothGattServiceController.cpp
     controllers/dbus/GenericBluetoothController.cpp
+    models/LogLevel.cpp
+    utils/Log.cpp
 )
 
 target_link_libraries(
