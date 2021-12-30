@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
+#include <controllers/threads/ServerThread.hpp>
 #include <protocols/ByteArray.hpp>
 #include <utils/Log.hpp>
 
@@ -13,7 +14,8 @@ const std::string BluetoothGattCharacteristicController::stopNotifyMethodName { 
 const std::string BluetoothGattCharacteristicController::legoLwpCharacteristicUuid { "00001624-1212-efde-1623-785feabcd123" };
 
 BluetoothGattCharacteristicController::BluetoothGattCharacteristicController(const std::string& bluetoothServicePath):
-    GenericBluetoothController(bluetoothServicePath)
+    GenericBluetoothController(bluetoothServicePath),
+    m_serverThread(nullptr)
 {
     refreshGattCharacteristicProperties();
 }
@@ -42,6 +44,11 @@ void BluetoothGattCharacteristicController::restartNotifications(void)
 {
     stopNotifications();
     m_bluetoothProxy->callMethod("StartNotify").onInterface(bluetoothGattCharacteristicInterfaceName);
+}
+
+void BluetoothGattCharacteristicController::setServerThread(ServerThread* serverThread)
+{
+    m_serverThread = serverThread;
 }
 
 void BluetoothGattCharacteristicController::stopNotifications(void)
@@ -167,6 +174,12 @@ void BluetoothGattCharacteristicController::onGattCharacteristicDataReceived(con
         "BluetoothGattCharacteristicController::onGattCharacteristicDataReceived("
         "size=" << data.size() << ","
         "data=" << Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data)) << ")");
+
+    if (m_serverThread)
+    {
+        auto text = Protocol::ByteArray::toHexString(Protocol::ByteArray::fromVector(data)) + "\r\n";
+        m_serverThread->broadcast(text);
+    }
 }
 
 } /* namespace Lego */

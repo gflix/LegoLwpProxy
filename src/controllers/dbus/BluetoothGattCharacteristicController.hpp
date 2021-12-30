@@ -6,6 +6,8 @@
 namespace Lego
 {
 
+class ServerThread;
+
 class BluetoothGattCharacteristicController: public GenericBluetoothController
 {
 public:
@@ -19,6 +21,7 @@ public:
 
     void refreshGattCharacteristicProperties(void);
     void restartNotifications(void);
+    void setServerThread(ServerThread* serverThread);
     void stopNotifications(void);
 
     static ManagedObjects getGattCharacteristics(void);
@@ -35,6 +38,7 @@ protected:
 
     Properties m_gattCharacteristicProperties;
     Bytes m_data;
+    ServerThread* m_serverThread;
 
     void onPropertiesChanged(
         const std::string& interface,

@@ -14,6 +14,9 @@ add_executable(
     controllers/ip/IpSocket.cpp
     controllers/ip/TcpServerSocket.cpp
     controllers/ip/TcpSocket.cpp
+    controllers/threads/GenericThread.cpp
+    controllers/threads/ServerConnectionThread.cpp
+    controllers/threads/ServerThread.cpp
     models/ByteArray.cpp
     models/LogLevel.cpp
     protocols/ByteArray.cpp
@@ -24,4 +27,5 @@ target_link_libraries(
     lego-lwp-proxy
     PRIVATE
     SDBusCpp::sdbus-c++
+    Threads::Threads
 )

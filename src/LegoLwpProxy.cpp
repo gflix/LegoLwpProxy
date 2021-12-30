@@ -5,6 +5,7 @@
 #include <controllers/dbus/BluetoothGattCharacteristicController.hpp>
 #include <controllers/dbus/BluetoothGattServiceController.hpp>
 #include <controllers/ip/TcpServerSocket.hpp>
+#include <controllers/threads/ServerThread.hpp>
 #include <utils/Log.hpp>
 
 #define MAIN_LOOP_SLEEP_USEC (3000000)
@@ -148,12 +149,16 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
             TcpServerSocket tcpServerSocket;
             LOG_INFO("Trying to open the TCP server port...");
             tcpServerSocket.open(tcpServerPort, IpSocket::Protocol::IPV6);
+            ServerThread proxyServerThread { tcpServerSocket, legoLwpCharacteristic };
+
+            proxyServerThread.start();
 
             while (!terminationFlag && bluetoothDeviceController.connected())
             {
                 usleep(MAIN_LOOP_SLEEP_USEC);
             }
 
+            proxyServerThread.stop();
             tcpServerSocket.close();
         }
 
