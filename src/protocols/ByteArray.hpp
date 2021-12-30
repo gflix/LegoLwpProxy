@@ -12,6 +12,7 @@ class ByteArray
 public:
 
     static uint8_t decodeHexDigit(char digit);
+    static Lego::ByteArray fromHexString(const Lego::ByteArray& input);
     static Lego::ByteArray fromHexString(const std::string& input);
     static Lego::ByteArray fromVector(const std::vector<uint8_t>& input);
     static std::string toHexString(const Lego::ByteArray& byteArray, bool withWhitespace = false);

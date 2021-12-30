@@ -21,6 +21,11 @@ uint8_t ByteArray::decodeHexDigit(char digit)
     throw std::invalid_argument("invalid hex digit");
 }
 
+Lego::ByteArray ByteArray::fromHexString(const Lego::ByteArray& input)
+{
+    return fromHexString(std::string((char*) input.c_str(), input.size()));
+}
+
 Lego::ByteArray ByteArray::fromHexString(const std::string& input)
 {
     if (input.size() & 1)
