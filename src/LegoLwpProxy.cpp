@@ -100,10 +100,6 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     string devicePath = arguments[0];
     int tcpServerPort = stoi(arguments[1]);
 
-    TcpServerSocket tcpServerSocket;
-    LOG_INFO("Trying to open the TCP server port...");
-    tcpServerSocket.open(tcpServerPort, IpSocket::Protocol::IPV6);
-
     LOG_INFO("Going to connect to device \"" << devicePath << " ...");
 
     BluetoothDeviceController bluetoothDeviceController { devicePath };
@@ -149,10 +145,16 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
 
             BluetoothGattCharacteristicController legoLwpCharacteristic { characteristics.cbegin()->first };
 
+            TcpServerSocket tcpServerSocket;
+            LOG_INFO("Trying to open the TCP server port...");
+            tcpServerSocket.open(tcpServerPort, IpSocket::Protocol::IPV6);
+
             while (!terminationFlag && bluetoothDeviceController.connected())
             {
                 usleep(MAIN_LOOP_SLEEP_USEC);
             }
+
+            tcpServerSocket.close();
         }
 
         if (!bluetoothDeviceController.connected())
@@ -162,13 +164,11 @@ void connectToDeviceAndStartProxy(const vector<string>& arguments)
     }
     catch(const std::exception& e)
     {
-        tcpServerSocket.close();
         bluetoothDeviceController.disconnect();
         LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
         throw;
     }
 
-    tcpServerSocket.close();
     bluetoothDeviceController.disconnect();
     LOG_INFO("Disconnected from \"" << bluetoothDeviceController.getName(deviceProperties) << "\".");
 }
